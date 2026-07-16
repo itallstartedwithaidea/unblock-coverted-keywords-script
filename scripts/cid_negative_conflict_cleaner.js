@@ -29,7 +29,7 @@ var CONFIG = {
   DRY_RUN: false,
 
   // Google Sheet URL for the conflict/removal log. Leave '' for Logger only.
-  SPREADSHEET_URL: 'https://docs.google.com/spreadsheets/d/1P6K0mCWdOrmZzBYCrUIyfXfioX1v2Gk6P6VOHvGof68/edit?gid=0#gid=0',
+  SPREADSHEET_URL: 'your own sheet',
 
   // Which negative levels to REMOVE when DRY_RUN = false.
   REMOVE_ACCOUNT_LEVEL: true,
