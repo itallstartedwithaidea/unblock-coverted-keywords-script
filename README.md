@@ -1,6 +1,6 @@
-# Google Ads Cleanup Scripts — Unblock Converted Keywords & Automated Placement Exclusions
+# Unblock Converted Keywords — Google Ads Scripts to Find & Remove Negative Keywords Blocking Your Best Search Terms
 
-**Free open-source Google Ads Scripts that (1) find & remove negative keywords blocking your converting search terms and (2) automatically exclude brand-misaligned placements across Display, YouTube, and Performance Max — with weekly automation built in.**
+**Free open-source Google Ads Scripts that find negative keywords blocking your converting search terms — at the account, campaign (including Performance Max), ad group, and shared list level — and remove them automatically.**
 
 ![Blocked Search Term Recovery Script](images/recovery-script-header.png)
 
@@ -8,42 +8,54 @@ Built by [John Williams](https://www.linkedin.com/in/johnwilliamsseo/) — found
 
 ---
 
+## The Problem These Scripts Solve
+
+Negative keywords are supposed to block junk. But over time — through auto-applied recommendations, past managers, or old sculpting decisions — they end up **blocking search terms that convert**.
+
+Worse, most "negative keyword conflict" tools miss this entirely, because of a matching asymmetry almost nobody accounts for:
+
+> **Your keywords match queries loosely (close variants). Your negatives match literally.**
+
+That means a negative like `"mens facial nyc"` can block a converting query even though it never literally conflicts with any keyword in your account. A keyword-level conflict checker sees nothing wrong. Meanwhile, revenue quietly disappears.
+
+These scripts audit your negatives against **actual search term history** — impressions, clicks, conversions, conversion value — and surface (or remove) every negative that's sitting on money.
+
 ## What's Included
 
 | Script | Level | What It Does |
 |---|---|---|
-| [`blocked_search_term_recovery.js`](scripts/blocked_search_term_recovery.js) | Single account (CID) | **Flagship.** Audits every negative against your search term history and removes negatives blocking terms with conversion history. Sees PMax campaign negatives via GAQL. |
-| [`negative_placement_guardian.js`](scripts/negative_placement_guardian.js) | Single account (CID), weekly | **Placement hygiene on autopilot.** Excludes kids' apps, mobile games, junk inventory, and zero-converting placements across Display, Video & PMax. Ships tuned for a beauty brand — [retune for any vertical in minutes](../../wiki/Customizing-For-Your-Vertical). |
-| [`cid_negative_conflict_cleaner.js`](scripts/cid_negative_conflict_cleaner.js) | Single account (CID) | Finds negatives literally blocking your positive keywords across all four levels, and removes them. |
-| [`mcc_negative_conflict_cleaner.js`](scripts/mcc_negative_conflict_cleaner.js) | MCC / Manager | The conflict cleaner, parallelized across up to 50 client accounts per run. |
-
-## The Problems These Solve
-
-**Negatives blocking your converters.** Keywords match queries loosely (close variants); negatives match literally. A negative like `"mens facial nyc"` can block a converting query without ever conflicting with any keyword text — invisible to every standard conflict checker, including Google's own script. The recovery script audits negatives against **actual search term performance** instead.
-
-**Display & PMax placement bleed.** By default your ads serve on kids' games, junk apps, and made-for-advertising sites. For consumer brands, mobile games alone commonly eat 30–60% of Display spend via accidental taps. The Placement Guardian excludes by pattern (instantly) and by performance (zero-converting spend, accidental-click CTR anomalies) — correctly routing exclusions to **campaign level** for Display/Video and **account level** for PMax, the only level PMax respects.
+| [`blocked_search_term_recovery.js`](scripts/blocked_search_term_recovery.js) | Single account (CID) | **The main event.** Audits every negative against your search term history and removes negatives blocking terms with conversion history. Sees PMax campaign negatives via GAQL. |
+| [`cid_negative_conflict_cleaner.js`](scripts/cid_negative_conflict_cleaner.js) | Single account (CID) | Classic conflict checker + remover: finds negatives literally blocking your positive keywords across all four levels. |
+| [`mcc_negative_conflict_cleaner.js`](scripts/mcc_negative_conflict_cleaner.js) | MCC / Manager account | The conflict cleaner, parallelized across up to 50 client accounts per run. |
 
 ## Quick Start (2 minutes)
 
-1. Google Ads → **Tools & Settings → Bulk Actions → Scripts** → **+**
-2. Paste a script, authorize, add a blank Google Sheet URL to `CONFIG.SPREADSHEET_URL`
-3. `DRY_RUN: true` → Preview → review the report → flip to `false` → Run
-4. Schedule the Placement Guardian **weekly**; it's incremental and skips existing exclusions
+1. Open Google Ads → **Tools & Settings → Bulk Actions → Scripts**
+2. Click **+**, paste the script, and authorize
+3. Create a blank Google Sheet, paste its URL into `CONFIG.SPREADSHEET_URL`
+4. Set `DRY_RUN: true` and **Preview** — review the report it writes to your sheet
+5. Flip `DRY_RUN: false` and run — every removal is logged with level, scope, text, and match type so anything can be re-added in seconds
 
-Full docs, config references, vertical customization (with a ready-made Claude prompt), and troubleshooting in the **[Wiki →](../../wiki)**
+Full walkthrough, config reference, and troubleshooting in the **[Wiki →](../../wiki)**
 
 ![Negative Keyword Conflict Cleaner](images/conflict-cleaner-header.png)
 
 ## Key Features
 
-- **Performance Max coverage** — campaign negatives and placements handled via GAQL, which sees PMax campaigns that entity iterators cannot
-- **Account-level negatives done right** — queries the `ACCOUNT_LEVEL_NEGATIVE_KEYWORDS` shared set via `shared_criterion` (not `customer_negative_criterion.keyword`, which throws `QueryError.UNRECOGNIZED_FIELD`)
-- **True negative match simulation** — exact/phrase/broad, literal, no close variants, exactly how Google applies negatives
-- **Vertical-adaptable placement blocklist** — editable pattern + allowlist arrays, with an [AI-assisted customization workflow](../../wiki/Customizing-For-Your-Vertical)
-- **Weekly-safe automation** — incremental runs, per-run safety caps, dry-run mode, full Google Sheets audit trail on every action
+- **Performance Max coverage** — pulls campaign negatives via GAQL `campaign_criterion`, which sees PMax campaigns that `AdsApp.campaigns()` entity iterators cannot
+- **Account-level negatives done right** — queries the `ACCOUNT_LEVEL_NEGATIVE_KEYWORDS` shared set via `shared_criterion` (they are *not* in `customer_negative_criterion.keyword`, a mistake that throws `QueryError.UNRECOGNIZED_FIELD`)
+- **True negative match simulation** — exact/phrase/broad, literal matching with no close variants, exactly how Google applies negatives
+- **Ranked by blocked revenue** — the report sorts by blocked conversions → conversion value → clicks, so the top row is your biggest recovery
+- **Full audit trail** — every action logged to Google Sheets; nothing is ever removed silently
+- **Guardrails** — dry-run mode, per-level removal toggles, and a threshold that skips negatives blocking 25+ keywords (usually intentional brand blockers)
+
+## Real-World Result
+
+This toolkit was built while auditing a live multi-location med-spa account, where dozens of converting search terms — `hydro facial nyc`, `facials upper east side`, `mens facial nyc` — were found excluded across Phrase, Performance Max, and AI Max campaigns. The recovery script identified and unblocked all of them in a single run, with a spreadsheet log of every change.
 
 ## Related Projects from AHMEEGO™
 
+- **[Google Ads Placement Exclusions](https://github.com/itallstartedwithaidea/google-ads-exclusions-display-pmax-ads)** — sister toolkit: automated placement cleanup for Display, YouTube & Performance Max
 - **[Buddy — Google Ads AI Agent](https://googleadsagent.ai)** — AI agent for Google Ads on web, iOS & Android
 - **[google-ads-mcp](https://github.com/itallstartedwithaidea)** — MCP server for Google Ads
 - **Free Google Ads Auditor** at [ahmeego.com](https://ahmeego.com)
@@ -51,13 +63,7 @@ Full docs, config references, vertical customization (with a ready-made Claude p
 
 ## Keywords / Topics
 
-`google-ads-script` · `negative-keywords` · `negative-keyword-conflicts` · `blocked-search-terms` · `unblock-converted-keywords` · `placement-exclusions` · `negative-placements` · `brand-safety` · `display-network` · `google-ads-automation` · `ppc` · `sem` · `performance-max` · `gaql` · `mcc-script` · `paid-search` · `ahmeego` · `buddy-google-ads` · `itallstartedwithaidea`
-
-## About
-
-**It All Started With A Idea LLC (AHMEEGO™)**
-Performance marketing studio & AI advertising tools — Queen Creek, Arizona, United States
-[itallstartedwithaidea.com](https://itallstartedwithaidea.com) · [ahmeego.com](https://ahmeego.com) · [googleadsagent.ai](https://googleadsagent.ai) · [LinkedIn](https://www.linkedin.com/in/johnwilliamsseo/) · [r/ppc_](https://www.reddit.com/r/ppc_/)
+`google-ads-script` · `negative-keywords` · `negative-keyword-conflicts` · `blocked-search-terms` · `unblock-converted-keywords` · `google-ads-automation` · `ppc` · `sem` · `performance-max` · `gaql` · `mcc-script` · `paid-search` · `ahmeego` · `itallstartedwithaidea`
 
 ## License
 
@@ -65,4 +71,4 @@ MIT — free for personal, client, and agency use. Attribution appreciated: link
 
 ---
 
-*Built with ☕ and 4:30 AM discipline in Queen Creek, Arizona. If these scripts recovered conversions or killed placement waste for you, star the repo and share it in [r/ppc_](https://www.reddit.com/r/ppc_/).*
+*Built with ☕ and 4:30 AM discipline in Queen Creek, Arizona. If this script recovered conversions for you, star the repo and share it in [r/ppc_](https://www.reddit.com/r/ppc_/).*
